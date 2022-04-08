@@ -11,7 +11,8 @@ class ProductListCreateAPIView(StafEditorPermissionMixin,generics.ListCreateAPIV
     serializer_class = ProductSerializer
     
     def perform_create(self,serializer):
-        # serializer.save(user= self.request.user)
+
+        email = serializer.validated_data.pop('email')
         title= serializer.validated_data.get('title')
         content_type= serializer.validated_data.get('content_type') or None
         if content_type is None:
