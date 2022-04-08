@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, mixins
 from .models import Product
 from .serializers import ProductSerializer 
 from rest_framework.decorators import api_view
@@ -13,8 +13,6 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     
     def perform_create(self,serializer):
         # serializer.save(user= self.request.user)
-        print("======")
-      
         title= serializer.validated_data.get('title')
         content_type= serializer.validated_data.get('content_type') or None
         if content_type is None:
@@ -59,6 +57,36 @@ product_destroy_view = ProductDestroyAPIView.as_view()
 # 
 # product_list_view = ProductListAPIView.as_view()
     
+
+class ProductMixinView(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    generics.GenericAPIView):
+    
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+    
+    def get(self,request,*args,**kwargs):
+        pk = kwargs.get('pk')
+        if pk is not None:
+            return self.retrieve(request,*args,**kwargs)
+        return  self.list(request,*args,**kwargs)
+    
+    def post(self,request,*args,**kwargs):
+        return self.create(request,*args,**kwargs)
+    
+    def perform_create(self,serializer):
+            # serializer.save(user= self.request.user)
+        title= serializer.validated_data.get('title')
+        content_type= serializer.validated_data.get('content_type') or None
+        if content_type is None:
+            content_type = title
+        serializer.save(content_type = content_type)
+    # def post()
+product_mixin_view = ProductMixinView.as_view()
+
 @api_view(['GET', 'POST'])
 def product_alt_view(request,pk=None,*args,**kwargs):
     method= request.method
