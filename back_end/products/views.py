@@ -1,16 +1,20 @@
 from rest_framework import generics
 from .models import Product
 from .serializers import ProductSerializer 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response 
+from django.shortcuts import get_object_or_404
 
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all() 
+ 
     serializer_class = ProductSerializer
     
     def perfom_create(self,serializer):
         # serializer.save(user= self.request.user)
         print("======")
-        print(serializer.validated_data)
+      
         title= serializer.validated_data.get('title')
         content_type= serializer.validated_data.get('content_type') or None
         if content_type is None:
@@ -26,9 +30,32 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
 
 product_detail_view = ProductDetailAPIView.as_view()
     
-class ProductListAPIView(generics.ListAPIView):
-    queryset = Product.objects.all() 
-    serializer_class = ProductSerializer 
-
-product_list_view = ProductListAPIView.as_view()
+# class ProductListAPIView(generics.ListAPIView):
+#     queryset = Product.objects.all() 
+#     serializer_class = ProductSerializer 
+# 
+# product_list_view = ProductListAPIView.as_view()
     
+@api_view(['GET', 'POST'])
+def product_alt_view(request,pk=None,*args,**kwargs):
+    method= request.method
+    if method == 'GET':
+        if pk is not None:
+           obj = get_object_or_404(Product,pk=pk)
+           data = ProductSerializer(obj,many=False).data
+           return Response(data)
+        else: 
+            queryset = Product.objects.all()
+            data = ProductSerializer(queryset, many=True).data
+            return Response(data)
+    if method == 'POST':
+        serializer = ProductSerializer(data= request.data)
+        if serializer.is_valid(raise_exception=True): 
+            # instance = serializer.save()
+            title= serializer.validated_data.get('title')
+            content_type= serializer.validated_data.get('content_type') or None
+            if content_type is None:
+                content_type = title
+            serializer.save(content_type = content_type)
+            return Response(serializer.data)
+        return Response({"invalid":"not good data"},status=400)
