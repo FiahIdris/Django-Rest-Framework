@@ -11,7 +11,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
  
     serializer_class = ProductSerializer
     
-    def perfom_create(self,serializer):
+    def perform_create(self,serializer):
         # serializer.save(user= self.request.user)
         print("======")
       
@@ -29,6 +29,29 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
     serializer_class = ProductSerializer 
 
 product_detail_view = ProductDetailAPIView.as_view()
+
+
+class ProductUpdateAPIView(generics.UpdateAPIView):
+    queryset = Product.objects.all() 
+    serializer_class = ProductSerializer
+    lookup_field = 'pk' 
+    
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if not instance.content_type:
+            instance.content_type = instance.title
+
+product_update_view = ProductUpdateAPIView.as_view()
+
+class ProductDestroyAPIView(generics.DestroyAPIView):
+    queryset = Product.objects.all() 
+    serializer_class = ProductSerializer
+    lookup_field = 'pk' 
+    
+    def perform_destroy(self, instance):
+        super().perform_destroy(instance)
+
+product_destroy_view = ProductDestroyAPIView.as_view()
     
 # class ProductListAPIView(generics.ListAPIView):
 #     queryset = Product.objects.all() 
