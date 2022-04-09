@@ -4,9 +4,9 @@ from .serializers import ProductSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response 
 from django.shortcuts import get_object_or_404
-from api.mixins import StafEditorPermissionMixin
+from api.mixins import StafEditorPermissionMixin,UserQuerySetMixin
 
-class ProductListCreateAPIView(StafEditorPermissionMixin,generics.ListCreateAPIView):
+class ProductListCreateAPIView(UserQuerySetMixin,StafEditorPermissionMixin,generics.ListCreateAPIView,):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     
@@ -19,6 +19,15 @@ class ProductListCreateAPIView(StafEditorPermissionMixin,generics.ListCreateAPIV
             content_type = title
         serializer.save(content_type = content_type)
         
+#     def get_queryset(self,*args,**kwargs):
+#         qs = super().get_queryset(*args,**kwargs)
+#         request = self.request
+#         user = request.user
+#    
+#         if not user.is_authenticated:
+#             return Product.objects.none()
+#             
+#         return qs.filter(user=request.user)
 
 product_list_create_view = ProductListCreateAPIView.as_view()
 

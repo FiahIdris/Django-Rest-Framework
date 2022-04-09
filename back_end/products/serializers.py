@@ -13,7 +13,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model=Product
         fields=[
-           'edit_url','url','pk', #'email',
+           'user','edit_url','url','pk', #'email',
            'title', 'content_type','price', 'sale_price','my_discount'
         ]
     # 
